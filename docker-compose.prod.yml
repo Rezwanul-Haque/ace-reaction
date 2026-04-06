@@ -1,0 +1,12 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - STATIC_DIR=/public
+      - ALLOWED_ORIGIN=${ALLOWED_ORIGIN:-http://localhost:8080}
+    restart: unless-stopped

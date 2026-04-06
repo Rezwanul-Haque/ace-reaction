@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: reflex-card-game
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: STATIC_DIR
+        value: "/public"
+      - key: ALLOWED_ORIGIN
+        value: "https://reflex-card-game.onrender.com"
+    plan: free
+    healthCheckPath: /health
