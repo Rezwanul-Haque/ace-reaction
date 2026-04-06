@@ -6,6 +6,8 @@ Click too early on a non-Ace and you lose.
 ## Live Demo
 
 > https://reflex-card-game.onrender.com/
+> 
+> https://reflex-card-game.fly.dev/
 
 ## Architecture
 
