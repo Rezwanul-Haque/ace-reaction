@@ -26,7 +26,7 @@ func main() {
 	// Dependencies
 	roomRepo := room.NewMemoryRoomRepository()
 	roomSvc := room.NewRoomService(roomRepo)
-	gameSvc := game.NewGameService()
+	gameSvc := game.NewGameService(cfg)
 
 	// Register routes
 	api := e.Group("/api")

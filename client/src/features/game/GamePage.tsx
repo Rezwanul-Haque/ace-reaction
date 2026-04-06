@@ -29,11 +29,13 @@ export function GamePage({
   roundResult,
   onSlap,
 }: GameProps) {
+  const canSlap = phase === 'playing' && !!currentCard;
+
   const handleSlap = useCallback(() => {
-    if (phase === 'playing' && currentCard) {
+    if (canSlap) {
       onSlap();
     }
-  }, [phase, currentCard, onSlap]);
+  }, [canSlap, onSlap]);
 
   const isMyWin = roundResult?.winner === playerName;
 
@@ -87,10 +89,10 @@ export function GamePage({
       <div className="pb-8 w-full max-w-md">
         <button
           onClick={handleSlap}
-          disabled={phase !== 'playing' || !currentCard}
+          disabled={!canSlap}
           className={`w-full py-6 rounded-2xl text-2xl font-black uppercase tracking-wider transition-all transform
             ${
-              phase === 'playing' && currentCard
+              canSlap
                 ? 'bg-red-500 hover:bg-red-600 active:scale-95 text-white shadow-lg shadow-red-500/30 cursor-pointer'
                 : 'bg-gray-800 text-gray-600 cursor-not-allowed'
             }

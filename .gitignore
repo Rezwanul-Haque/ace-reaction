@@ -6,6 +6,8 @@ vendor/
 dist/
 build/
 server/server
+server/tmp/
+tmp/
 
 # IDE & tools
 .idea/

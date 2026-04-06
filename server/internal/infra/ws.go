@@ -88,5 +88,6 @@ type ErrorMsg struct {
 }
 
 type ClientMessage struct {
-	Type string `json:"type"`
+	Type       string `json:"type"`
+	CardNumber int    `json:"card_number,omitempty"`
 }

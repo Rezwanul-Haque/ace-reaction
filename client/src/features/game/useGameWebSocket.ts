@@ -125,7 +125,12 @@ export function useGameWebSocket() {
 
   const sendClick = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'click' }));
+      setState((prev) => {
+        wsRef.current?.send(
+          JSON.stringify({ type: 'click', card_number: prev.cardNumber })
+        );
+        return prev;
+      });
     }
   }, []);
 

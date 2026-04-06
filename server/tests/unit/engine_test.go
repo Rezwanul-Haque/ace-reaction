@@ -37,7 +37,7 @@ func TestHandleClickOnNonAce(t *testing.T) {
 	g.CurrentCard = &nonAce
 	g.CardNumber = 1
 
-	result := g.HandleClick("Alice")
+	result := g.HandleClick("Alice", 1)
 	require.NotNil(t, result)
 	assert.Equal(t, "Bob", result.Winner)
 	assert.Equal(t, "Alice", result.Loser)
@@ -54,7 +54,7 @@ func TestHandleClickOnAceFirstPlayer(t *testing.T) {
 	g.CardNumber = 1
 
 	// First player clicks on Ace — result is nil (waiting for opponent or timeout)
-	result := g.HandleClick("Alice")
+	result := g.HandleClick("Alice", 1)
 	assert.Nil(t, result)
 	assert.True(t, g.HasClicked["Alice"])
 }
@@ -67,10 +67,10 @@ func TestHandleClickOnAceBothPlayers(t *testing.T) {
 	g.CardNumber = 1
 
 	// Alice clicks first
-	g.HandleClick("Alice")
+	g.HandleClick("Alice", 1)
 
 	// Bob clicks second — Alice should win (clicked earlier)
-	result := g.HandleClick("Bob")
+	result := g.HandleClick("Bob", 1)
 	require.NotNil(t, result)
 	assert.Equal(t, "Alice", result.Winner)
 	assert.Equal(t, "Bob", result.Loser)
@@ -86,11 +86,11 @@ func TestHandleDoubleClick(t *testing.T) {
 	g.CardNumber = 1
 
 	// First click loses the round
-	result := g.HandleClick("Alice")
+	result := g.HandleClick("Alice", 1)
 	require.NotNil(t, result)
 
 	// Second click should be ignored (already clicked)
-	result2 := g.HandleClick("Alice")
+	result2 := g.HandleClick("Alice", 1)
 	assert.Nil(t, result2)
 }
 
@@ -102,7 +102,7 @@ func TestResolveAceTimeoutOneClicker(t *testing.T) {
 	g.CardNumber = 1
 
 	// Only Alice clicks
-	g.HandleClick("Alice")
+	g.HandleClick("Alice", 1)
 
 	// Timeout resolves
 	result := g.ResolveAceTimeout()
@@ -161,8 +161,25 @@ func TestHandleClickOnNilCard(t *testing.T) {
 	g := game.NewGame("room1", "Alice", "Bob", 3)
 	g.CurrentCard = nil
 
-	result := g.HandleClick("Alice")
+	result := g.HandleClick("Alice", 1)
 	assert.Nil(t, result)
+}
+
+func TestHandleClickStaleCardNumber(t *testing.T) {
+	g := game.NewGame("room1", "Alice", "Bob", 3)
+
+	nonAce := game.Card{Suit: game.SuitHearts, Rank: game.Rank7}
+	g.CurrentCard = &nonAce
+	g.CardNumber = 5
+
+	// Click with old card number — should be ignored
+	result := g.HandleClick("Alice", 3)
+	assert.Nil(t, result)
+
+	// Click with correct card number — should work
+	result = g.HandleClick("Alice", 5)
+	require.NotNil(t, result)
+	assert.Equal(t, "early_click", result.Reason)
 }
 
 func TestHandleClickWhenNotPlaying(t *testing.T) {
@@ -170,6 +187,6 @@ func TestHandleClickWhenNotPlaying(t *testing.T) {
 	g.State = game.GameStateRoundEnd
 	g.CurrentCard = &game.Card{Suit: game.SuitHearts, Rank: game.RankAce}
 
-	result := g.HandleClick("Alice")
+	result := g.HandleClick("Alice", 1)
 	assert.Nil(t, result)
 }

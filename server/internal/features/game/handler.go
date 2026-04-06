@@ -125,7 +125,7 @@ func (h *WSHandler) readLoop(conn *infra.Connection, roomID string) {
 
 		switch msg.Type {
 		case "click":
-			h.gameService.HandleClick(roomID, conn.PlayerName)
+			h.gameService.HandleClick(roomID, conn.PlayerName, msg.CardNumber)
 		}
 	}
 }

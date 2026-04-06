@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
+	"github.com/rezwanul-haque/reflex-card-game/server/internal/core"
 	"github.com/rezwanul-haque/reflex-card-game/server/internal/features/game"
 	"github.com/rezwanul-haque/reflex-card-game/server/internal/features/room"
 	"github.com/rezwanul-haque/reflex-card-game/server/internal/infra"
@@ -21,7 +22,8 @@ func setupTestServer() (*echo.Echo, *room.RoomService, *game.GameService) {
 	e := echo.New()
 	repo := room.NewMemoryRoomRepository()
 	roomSvc := room.NewRoomService(repo)
-	gameSvc := game.NewGameService()
+	cfg := core.LoadConfig()
+	gameSvc := game.NewGameService(cfg)
 
 	api := e.Group("/api")
 	roomHandler := room.NewRoomHandler(roomSvc)
@@ -140,9 +142,10 @@ func TestEarlyClickLosesRound(t *testing.T) {
 
 	// Check if this card is NOT an Ace
 	card := flipMsg["card"].(map[string]any)
+	cardNum := int(flipMsg["card_number"].(float64))
 	if card["rank"] != "A" {
-		// Click on non-ace — should lose
-		clickMsg := infra.ClientMessage{Type: "click"}
+		// Click on non-ace with correct card number — should lose
+		clickMsg := infra.ClientMessage{Type: "click", CardNumber: cardNum}
 		msgBytes, _ := json.Marshal(clickMsg)
 		conn1.WriteMessage(websocket.TextMessage, msgBytes)
 

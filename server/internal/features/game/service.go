@@ -6,15 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/rezwanul-haque/reflex-card-game/server/internal/core"
 	"github.com/rezwanul-haque/reflex-card-game/server/internal/infra"
-)
-
-const (
-	RoundsToWin      = 3
-	CardFlipMinDelay = 1500 * time.Millisecond
-	CardFlipMaxDelay = 3000 * time.Millisecond
-	AceClickTimeout  = 1000 * time.Millisecond
-	RoundEndDelay    = 2000 * time.Millisecond
 )
 
 type GameRoom struct {
@@ -26,16 +19,18 @@ type GameRoom struct {
 type GameService struct {
 	mu    sync.RWMutex
 	rooms map[string]*GameRoom
+	cfg   *core.Config
 }
 
-func NewGameService() *GameService {
+func NewGameService(cfg *core.Config) *GameService {
 	return &GameService{
 		rooms: make(map[string]*GameRoom),
+		cfg:   cfg,
 	}
 }
 
 func (s *GameService) CreateGame(roomID, player1, player2 string, conns map[string]*infra.Connection) {
-	g := NewGame(roomID, player1, player2, RoundsToWin)
+	g := NewGame(roomID, player1, player2, s.cfg.RoundsToWin)
 	gameRoom := &GameRoom{
 		Game:        g,
 		Connections: conns,
@@ -70,7 +65,7 @@ func (s *GameService) GetGameRoom(roomID string) *GameRoom {
 	return s.rooms[roomID]
 }
 
-func (s *GameService) HandleClick(roomID, player string) {
+func (s *GameService) HandleClick(roomID, player string, cardNumber int) {
 	s.mu.RLock()
 	gameRoom := s.rooms[roomID]
 	s.mu.RUnlock()
@@ -83,7 +78,7 @@ func (s *GameService) HandleClick(roomID, player string) {
 	g.Lock()
 	defer g.Unlock()
 
-	result := g.HandleClick(player)
+	result := g.HandleClick(player, cardNumber)
 	if result != nil {
 		s.broadcastRoundResult(gameRoom, result)
 	}
@@ -113,7 +108,6 @@ func (s *GameService) HandleDisconnect(roomID, player string) {
 			Type:   "player_left",
 			Player: player,
 		})
-		// Award win to remaining player
 		conn.SendJSON(infra.GameOverMsg{
 			Type:   "game_over",
 			Winner: opponent,
@@ -174,7 +168,7 @@ func (s *GameService) runGameLoop(roomID string) {
 		if card.IsAce() {
 			// Wait for clicks with timeout
 			select {
-			case <-time.After(AceClickTimeout):
+			case <-time.After(s.cfg.AceClickTimeout):
 			case <-gameRoom.StopChan:
 				return
 			}
@@ -186,14 +180,13 @@ func (s *GameService) runGameLoop(roomID string) {
 				g.Unlock()
 				s.broadcastRoundResult(gameRoom, result)
 			} else if !anyClicked(g) {
-				// Nobody clicked — just continue
 				g.Unlock()
 			} else {
 				g.Unlock()
 			}
 		} else {
 			// Non-ace card: wait for potential early click or timeout
-			delay := CardFlipMinDelay + time.Duration(rand.Int63n(int64(CardFlipMaxDelay-CardFlipMinDelay)))
+			delay := s.cfg.CardFlipMinDelay + time.Duration(rand.Int63n(int64(s.cfg.CardFlipMaxDelay-s.cfg.CardFlipMinDelay)))
 			select {
 			case <-time.After(delay):
 			case <-gameRoom.StopChan:
@@ -204,7 +197,6 @@ func (s *GameService) runGameLoop(roomID string) {
 		// Check if round ended (from a click during the wait)
 		g.Lock()
 		if g.State == GameStateRoundEnd {
-			// Check game over
 			over, winner := g.IsGameOver()
 			if over {
 				g.Unlock()
@@ -221,7 +213,7 @@ func (s *GameService) runGameLoop(roomID string) {
 
 			// Pause between rounds
 			select {
-			case <-time.After(RoundEndDelay):
+			case <-time.After(s.cfg.RoundEndDelay):
 			case <-gameRoom.StopChan:
 				return
 			}

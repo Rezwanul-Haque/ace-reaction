@@ -30,7 +30,7 @@ type Game struct {
 	CurrentCard *Card
 	CardNumber  int
 	RoundsToWin int
-	ClickTimes  map[string]time.Time
+	ClickTimes  map[string]int64
 	HasClicked  map[string]bool
 }
 
@@ -45,7 +45,7 @@ func NewGame(roomID string, player1, player2 string, roundsToWin int) *Game {
 		State:       GameStatePlaying,
 		Deck:        deck,
 		RoundsToWin: roundsToWin,
-		ClickTimes:  make(map[string]time.Time),
+		ClickTimes:  make(map[string]int64),
 		HasClicked:  make(map[string]bool),
 	}
 }
@@ -69,13 +69,18 @@ func (g *Game) FlipCard() (*Card, int, bool) {
 	}
 	g.CurrentCard = &card
 	g.CardNumber++
-	g.ClickTimes = make(map[string]time.Time)
+	g.ClickTimes = make(map[string]int64)
 	g.HasClicked = make(map[string]bool)
 	return &card, g.CardNumber, true
 }
 
-func (g *Game) HandleClick(player string) *RoundResult {
+func (g *Game) HandleClick(player string, cardNumber int) *RoundResult {
 	if g.State != GameStatePlaying || g.CurrentCard == nil {
+		return nil
+	}
+
+	// Reject clicks for a different card (stale click from previous round)
+	if cardNumber != g.CardNumber {
 		return nil
 	}
 
@@ -84,7 +89,7 @@ func (g *Game) HandleClick(player string) *RoundResult {
 	}
 
 	g.HasClicked[player] = true
-	g.ClickTimes[player] = time.Now()
+	g.ClickTimes[player] = nanoNow()
 
 	if !g.CurrentCard.IsAce() {
 		// Clicked on non-Ace — this player loses the round
@@ -102,7 +107,7 @@ func (g *Game) HandleClick(player string) *RoundResult {
 	opponent := g.GetOpponent(player)
 	if g.HasClicked[opponent] {
 		// Both clicked on Ace — earliest wins
-		if g.ClickTimes[player].Before(g.ClickTimes[opponent]) {
+		if g.ClickTimes[player] < g.ClickTimes[opponent] {
 			g.Scores[player]++
 			g.State = GameStateRoundEnd
 			return &RoundResult{
@@ -175,6 +180,10 @@ func (g *Game) IsGameOver() (bool, string) {
 func (g *Game) PrepareNextRound() {
 	g.State = GameStatePlaying
 	g.CurrentCard = nil
-	g.ClickTimes = make(map[string]time.Time)
+	g.ClickTimes = make(map[string]int64)
 	g.HasClicked = make(map[string]bool)
+}
+
+func nanoNow() int64 {
+	return time.Now().UnixNano()
 }
