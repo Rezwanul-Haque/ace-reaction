@@ -1,0 +1,73 @@
+# flyctl launch added from .gitignore
+# Dependencies
+**/node_modules
+**/vendor
+
+# Build
+**/dist
+**/build
+**/server/server
+**/server/tmp
+**/tmp
+
+# IDE & tools
+**/.idea
+**/.vscode
+**/.claude/*
+**/*.swp
+**/*.swo
+**/*~
+
+# OS
+**/.DS_Store
+**/Thumbs.db
+
+# Env
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Logs
+**/*.log
+
+# SQLite data
+**/server/data
+
+# flyctl launch added from .idea/.gitignore
+# Default ignored files
+.idea/shelf
+.idea/workspace.xml
+# Editor-based HTTP Client requests
+.idea/httpRequests
+# Ignored default folder with query files
+.idea/queries
+# Datasource local storage ignored files
+.idea/dataSources
+.idea/dataSources.local.xml
+
+# flyctl launch added from client/.gitignore
+# Logs
+client/**/logs
+client/**/*.log
+client/**/npm-debug.log*
+client/**/yarn-debug.log*
+client/**/yarn-error.log*
+client/**/pnpm-debug.log*
+client/**/lerna-debug.log*
+
+client/**/node_modules
+client/**/dist
+client/**/dist-ssr
+client/**/*.local
+
+# Editor directories and files
+client/**/.vscode/*
+!client/**/.vscode/extensions.json
+client/**/.idea
+client/**/.DS_Store
+client/**/*.suo
+client/**/*.ntvs*
+client/**/*.njsproj
+client/**/*.sln
+client/**/*.sw?
+fly.toml
