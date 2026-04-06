@@ -10,5 +10,7 @@ services:
         value: "/public"
       - key: ALLOWED_ORIGIN
         value: "https://reflex-card-game.onrender.com"
+      - key: DB_PATH
+        value: "/tmp/data/ace_reaction.db"
     plan: free
     healthCheckPath: /health

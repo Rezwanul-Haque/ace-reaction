@@ -28,7 +28,11 @@ func main() {
 	core.SetupMiddleware(e, cfg)
 
 	// Database
-	database, err := db.Open("./data/ace_reaction.db")
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "./data/ace_reaction.db"
+	}
+	database, err := db.Open(dbPath)
 	if err != nil {
 		log.Fatalf("failed to open database: %v", err)
 	}
