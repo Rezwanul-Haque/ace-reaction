@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/rezwanul-haque/reflex-card-game/server/internal/core"
 	"github.com/rezwanul-haque/reflex-card-game/server/internal/features/game"
 	"github.com/rezwanul-haque/reflex-card-game/server/internal/features/health"
@@ -41,12 +40,16 @@ func main() {
 
 	// Serve static frontend files in production
 	if staticDir := os.Getenv("STATIC_DIR"); staticDir != "" {
-		e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
-			Root:   staticDir,
-			Index:  "index.html",
-			HTML5:  true,
-			Browse: false,
-		}))
+		e.Static("/assets", staticDir+"/assets")
+		e.File("/favicon.svg", staticDir+"/favicon.svg")
+		// SPA fallback — serve index.html for all unmatched routes
+		e.GET("/*", func(c echo.Context) error {
+			return c.File(staticDir + "/index.html")
+		})
+		e.GET("/", func(c echo.Context) error {
+			return c.File(staticDir + "/index.html")
+		})
+		log.Printf("Serving static files from %s", staticDir)
 	}
 
 	// Start server in goroutine
