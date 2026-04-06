@@ -175,14 +175,14 @@ export function HomePage({ onJoin }: HomeProps) {
 
           {/* Right Column — Active Rooms + Leaderboard */}
           <div className="lg:col-span-4 space-y-6">
-            {/* Active Nodes */}
+            {/* Active Arenas */}
             <section className="bg-surface-low p-5">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-headline text-sm font-bold tracking-tight uppercase flex items-center gap-2">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-primary">
                     <path d="M17 16l-4-4V8.82C14.16 8.4 15 7.3 15 6c0-1.66-1.34-3-3-3S9 4.34 9 6c0 1.3.84 2.4 2 2.82V12l-4 4H2v5h5v-3.05l4-4.2 4 4.2V21h5v-5h-3z" />
                   </svg>
-                  Active Nodes
+                  Active Arenas
                 </h3>
                 <span className="text-[10px] font-bold text-primary animate-pulse">
                   {activeRooms && activeRooms.length > 0
@@ -236,7 +236,7 @@ export function HomePage({ onJoin }: HomeProps) {
               ) : (
                 <div className="bg-surface-mid p-6 text-center">
                   <p className="text-on-surface-variant text-xs font-headline uppercase tracking-widest">
-                    No active sessions
+                    No active arenas
                   </p>
                   <p className="text-outline text-[10px] mt-1">
                     Create an arena to start
