@@ -8,8 +8,14 @@ import (
 func SetupMiddleware(e *echo.Echo, cfg *Config) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	origins := []string{"*"}
+	if cfg.AllowedOrigin != "" {
+		origins = []string{cfg.AllowedOrigin}
+	}
+
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{cfg.AllowedOrigin, "http://localhost:5173", "http://localhost:3000"},
+		AllowOrigins: origins,
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{"Content-Type", "Authorization"},
 	}))

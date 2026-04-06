@@ -14,9 +14,6 @@ func LoadConfig() *Config {
 	}
 
 	origin := os.Getenv("ALLOWED_ORIGIN")
-	if origin == "" {
-		origin = "http://localhost:5173"
-	}
 
 	return &Config{
 		Port:          port,
